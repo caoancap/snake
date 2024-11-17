@@ -134,7 +134,9 @@ const moveSnake = (snake: Snake): Snake => {
 const checkCollision = (snake: Snake, trap: Trap | null): boolean => {
   const [head, ...body] = snake.positions;
   if (trap !== null) {
-    return coordinateIsEqual(head, trap.position);
+    if (coordinateIsEqual(head, trap.position)) {
+      return true;
+    }
   }
   return body.some((segment) => coordinateIsEqual(segment, head));
 };
