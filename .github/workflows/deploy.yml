@@ -38,5 +38,3 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: snake
         folder: dist
-        repository-name: cao-ancap/web-games
-        target-folder: snake
