@@ -14,6 +14,13 @@ export enum FoodType {
   Frog,
 }
 
+export enum Directions {
+  Up,
+  Right,
+  Down,
+  Left,
+}
+
 export interface Food {
   position: Coordinate;
   direction: Coordinate;

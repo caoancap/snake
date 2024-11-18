@@ -1,3 +1,9 @@
+:root {
+  --cells: 21;
+  --board-size: min(80vw, 80vh);
+  --cell-size: calc(var(--board-size) / var(--cells));
+}
+
 body {
   background-color: darkblue;
   height: 100vh;
@@ -5,19 +11,85 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+}
+
+.panel {
+  width: var(--board-size);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+#score {
+  color: white;
+  font-size: xx-large;
+  font-weight: bold;
+}
+
+.control {
+  background-color: darkgray;
+  border-radius: 50%;
+  padding: 0.5rem;
+  width: 10vh;
+  height: 10vh;
+  display: grid;
+  grid-gap: 0.1rem;
+  grid-template-columns: 4fr 3fr 4fr;
+  grid-template-rows: 4fr 3fr 4fr;
+  grid-template-areas:
+    "....  up  ....."
+    "left  ..  right"
+    ".... down .....";
+}
+
+.control button {
+  color: gray;
+  background: currentcolor;
+  border: none;
+  position: relative;
+}
+
+.control button:hover {
+  color: lightgray;
+}
+
+.control button:active {
+  color: lightgray;
+}
+
+#up {
+  grid-area: up;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+#left {
+  grid-area: left;
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+#right {
+  grid-area: right;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+#down {
+  grid-area: down;
+  border-radius: 0 0 0.5rem 0.5rem;
 }
 
 #board {
   background-color: darkslategray;
   display: grid;
-  grid-template-rows: repeat(21, calc(min(80vw, 80vh) / 21));
-  grid-template-columns: repeat(21, calc(min(80vw, 80vh) / 21));
+  grid-template-rows: repeat(var(--cells), var(--cell-size));
+  grid-template-columns: repeat(var(--cells), var(--cell-size));
   gap: 1px;
 }
 
 .cell {
-  width: calc(min(80vw, 80vh) / 21);
-  height: calc(min(80vw, 80vh) / 21);
+  width: var(--cell-size);
+  height: var(--cell-size);
   background-color: sandybrown;
   margin: 1px;
 }
@@ -39,7 +111,7 @@ body {
 }
 
 .food.frog {
-  background-color: green;
+  background-color: yellowgreen;
 }
 
 .trap {

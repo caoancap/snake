@@ -1,6 +1,15 @@
-import { Coordinate, Food, FoodType, Snake, State, Trap } from "./types";
+import {
+  Coordinate,
+  Directions,
+  Food,
+  FoodType,
+  Snake,
+  State,
+  Trap,
+} from "./types";
 
 export const boardSize = 21;
+const startSnakeSize = 3;
 
 export const UP: Coordinate = { x: 0, y: -1 };
 export const RIGHT: Coordinate = { x: 1, y: 0 };
@@ -19,7 +28,7 @@ const generateRandomFoodType = (maxFoodType: FoodType): FoodType =>
   maxFoodType === FoodType.Slug
     ? FoodType.Slug
     : [FoodType.Slug, FoodType.Rat, FoodType.Frog][
-        Math.floor(Math.random() * maxFoodType)
+        Math.floor(Math.random() * (maxFoodType + 1))
       ];
 
 const generateFood = (maxFoodType: FoodType): Food => ({
@@ -29,7 +38,7 @@ const generateFood = (maxFoodType: FoodType): Food => ({
 });
 
 const generateTrap = (canGenerate: boolean): Trap | null =>
-  canGenerate && Math.floor(Math.random() * 2) === 0
+  canGenerate && Math.random() > 0.8
     ? {
         position: generateRandomDirection(),
       }
@@ -39,11 +48,10 @@ const getNewGateState = (): State => {
   const y = Math.floor(boardSize / 2);
   return {
     snake: {
-      positions: [
-        { x: 2, y },
-        { x: 1, y },
-        { x: 0, y },
-      ],
+      positions: Array.from({ length: startSnakeSize }, (_, i) => ({
+        x: startSnakeSize - i - 1,
+        y,
+      })),
       direction: RIGHT,
     },
     food: generateFood(FoodType.Slug),
@@ -64,6 +72,14 @@ export const createBoard = (): HTMLElement => {
     board.appendChild(cell);
   }
   return board;
+};
+
+const score = document.getElementById("score")!;
+
+const getPoints = (): number => state.snake.positions.length - startSnakeSize;
+
+export const updatePoints = (): void => {
+  score.innerHTML = String(getPoints());
 };
 
 const calcIndex = (coordinate: Coordinate): number =>
@@ -131,6 +147,29 @@ const moveSnake = (snake: Snake): Snake => {
   return newSnake;
 };
 
+const moveFood = (food: Food): Food => {
+  let canMove = false;
+  let factor = 1;
+  switch (food.type) {
+    case FoodType.Slug:
+      canMove = Math.random() > 0.98;
+      break;
+    case FoodType.Rat:
+      canMove = Math.random() > 0.8;
+      break;
+    case FoodType.Frog:
+      canMove = Math.random() > 0.94;
+      factor = 2;
+      break;
+    default:
+  }
+  if (canMove) {
+    const newPosition = calcNewPosition(food.position, food.direction, factor);
+    return { ...food, position: newPosition };
+  }
+  return food;
+};
+
 const checkCollision = (snake: Snake, trap: Trap | null): boolean => {
   const [head, ...body] = snake.positions;
   if (trap !== null) {
@@ -141,7 +180,7 @@ const checkCollision = (snake: Snake, trap: Trap | null): boolean => {
   return body.some((segment) => coordinateIsEqual(segment, head));
 };
 
-export const gameLoop = (board: HTMLElement) => {
+export const gameLoop = (board: HTMLElement): void => {
   if (state.gameOver) {
     alert("Game over!");
     return;
@@ -154,14 +193,17 @@ export const gameLoop = (board: HTMLElement) => {
 
   let newFood = state.food;
   let newTrap = state.trap;
-  if (coordinateIsEqual(newSnake.positions[0], state.food.position)) {
+  const gotFood = coordinateIsEqual(newSnake.positions[0], state.food.position);
+  if (gotFood) {
     newSnake.positions.push({
       ...state.snake.positions[newSnake.positions.length - 1],
     });
 
     let maxFoodType = FoodType.Slug;
 
-    switch (Math.floor(newSnake.positions.length / 10)) {
+    const points = getPoints();
+
+    switch (Math.floor(points / 5)) {
       case 0:
         maxFoodType = FoodType.Slug;
         break;
@@ -172,7 +214,9 @@ export const gameLoop = (board: HTMLElement) => {
         maxFoodType = FoodType.Frog;
     }
     newFood = generateFood(maxFoodType);
-    newTrap = generateTrap(newSnake.positions.length > 5);
+    newTrap = generateTrap(points > 7);
+  } else {
+    newFood = moveFood(state.food);
   }
 
   const newState = {
@@ -184,23 +228,40 @@ export const gameLoop = (board: HTMLElement) => {
 
   state = newState;
 
+  if (gotFood) {
+    updatePoints();
+  }
   drawBoard(board);
   setTimeout(() => gameLoop(board), 200);
 };
 
-export const handleKeyPress = (event: KeyboardEvent) => {
-  const keyMap: Record<string, Coordinate> = {
-    ARROWUP: UP,
-    ARROWRIGHT: RIGHT,
-    ARROWDOWN: DOWN,
-    ARROWLEFT: LEFT,
-    W: UP,
-    D: RIGHT,
-    S: DOWN,
-    A: LEFT,
-  };
+const directionKeyMap: Record<string, Coordinate> = {
+  ARROWUP: UP,
+  ARROWRIGHT: RIGHT,
+  ARROWDOWN: DOWN,
+  ARROWLEFT: LEFT,
+  W: UP,
+  D: RIGHT,
+  S: DOWN,
+  A: LEFT,
+};
 
-  const direction = keyMap[event.key.toLocaleUpperCase()];
+export const handleKeyPress = (event: KeyboardEvent) => {
+  const direction = directionKeyMap[event.key.toLocaleUpperCase()];
+  if (direction !== undefined) {
+    state.snake.direction = direction;
+  }
+};
+
+const directionMap: Record<Directions, Coordinate> = {
+  [Directions.Up]: UP,
+  [Directions.Right]: RIGHT,
+  [Directions.Down]: DOWN,
+  [Directions.Left]: LEFT,
+};
+
+export const setNewDirection = (val: Directions) => {
+  const direction = directionMap[val];
   if (direction !== undefined) {
     state.snake.direction = direction;
   }
