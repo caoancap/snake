@@ -8,6 +8,13 @@ export interface Snake {
   direction: Coordinate;
 }
 
+export enum Types {
+  Food = "food",
+  Trap = "trap",
+  SnakeHead = "head",
+  SnakeTail = "tail",
+}
+
 export enum FoodType {
   Slug,
   Rat,

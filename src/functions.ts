@@ -6,6 +6,7 @@ import {
   Snake,
   State,
   Trap,
+  Types,
 } from "./types";
 
 export const boardSize = 21;
@@ -93,29 +94,44 @@ export const drawBoard = (board: HTMLElement): void => {
   const foodIndex = calcIndex(state.food.position);
   const trapIndex = state.trap !== null ? calcIndex(state.trap.position) : null;
 
+  const types = Array(cells.length);
+
+  if (trapIndex !== null) {
+    types[trapIndex] = Types.Trap;
+  }
+  types[foodIndex] = Types.Food;
+  types[snakeIndex] = Types.SnakeHead;
+  tailIndexList.forEach((i) => (types[i] = Types.SnakeTail));
+
   cells.forEach((cell, index) => {
     const classList: string[] = [];
     classList.push("cell");
-    if (snakeIndex === index) {
-      classList.push("snake");
-    } else if (tailIndexList.includes(index)) {
-      classList.push("tail");
-    } else if (foodIndex === index) {
-      classList.push("food");
-      switch (state.food.type) {
-        case FoodType.Slug:
-          classList.push("slug");
-          break;
-        case FoodType.Rat:
-          classList.push("rat");
-          break;
-        case FoodType.Frog:
-          classList.push("frog");
-          break;
-        default:
-      }
-    } else if (trapIndex === index) {
-      classList.push("trap");
+    switch (types[index]) {
+      case Types.Trap:
+        classList.push("trap");
+        break;
+      case Types.Food:
+        classList.push("food");
+        switch (state.food.type) {
+          case FoodType.Slug:
+            classList.push("slug");
+            break;
+          case FoodType.Rat:
+            classList.push("rat");
+            break;
+          case FoodType.Frog:
+            classList.push("frog");
+            break;
+          default:
+        }
+        break;
+      case Types.SnakeHead:
+        classList.push("snake");
+        break;
+      case Types.SnakeTail:
+        classList.push("tail");
+        break;
+      default:
     }
     cell.className = classList.join(" ");
   });
