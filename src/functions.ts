@@ -42,7 +42,7 @@ const generateFood = (maxFoodType: FoodType): Food => ({
 });
 
 const generateTrap = (canGenerate: boolean): Trap | null =>
-  canGenerate && Math.random() > 0.9
+  canGenerate && Math.random() > 0.3
     ? {
         position: generateRandomDirection(),
       }
