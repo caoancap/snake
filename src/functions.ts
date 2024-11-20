@@ -1,4 +1,12 @@
 import {
+  directionKeyMap,
+  directionMap,
+  DOWN,
+  LEFT,
+  RIGHT,
+  UP,
+} from "./directions";
+import {
   Coordinate,
   Directions,
   Food,
@@ -9,13 +17,8 @@ import {
   Types,
 } from "./types";
 
-export const boardSize = 21;
+const boardSize = 21;
 const startSnakeSize = 3;
-
-export const UP: Coordinate = { x: 0, y: -1 };
-export const RIGHT: Coordinate = { x: 1, y: 0 };
-export const DOWN: Coordinate = { x: 0, y: 1 };
-export const LEFT: Coordinate = { x: -1, y: 0 };
 
 const generateRandomPosition = (): Coordinate => ({
   x: Math.floor(Math.random() * boardSize),
@@ -39,7 +42,7 @@ const generateFood = (maxFoodType: FoodType): Food => ({
 });
 
 const generateTrap = (canGenerate: boolean): Trap | null =>
-  canGenerate && Math.random() > 0.8
+  canGenerate && Math.random() > 0.9
     ? {
         position: generateRandomDirection(),
       }
@@ -187,13 +190,13 @@ const moveFood = (food: Food): Food => {
 };
 
 const checkCollision = (snake: Snake, trap: Trap | null): boolean => {
-  const [head, ...body] = snake.positions;
+  const [head, ...tail] = snake.positions;
   if (trap !== null) {
     if (coordinateIsEqual(head, trap.position)) {
       return true;
     }
   }
-  return body.some((segment) => coordinateIsEqual(segment, head));
+  return tail.some((segment) => coordinateIsEqual(segment, head));
 };
 
 export const gameLoop = (board: HTMLElement): void => {
@@ -251,33 +254,15 @@ export const gameLoop = (board: HTMLElement): void => {
   setTimeout(() => gameLoop(board), 200);
 };
 
-const directionKeyMap: Record<string, Coordinate> = {
-  ARROWUP: UP,
-  ARROWRIGHT: RIGHT,
-  ARROWDOWN: DOWN,
-  ARROWLEFT: LEFT,
-  W: UP,
-  D: RIGHT,
-  S: DOWN,
-  A: LEFT,
-};
-
 export const handleKeyPress = (event: KeyboardEvent) => {
-  const direction = directionKeyMap[event.key.toLocaleUpperCase()];
-  if (direction !== undefined) {
-    state.snake.direction = direction;
-  }
+  setDirection(directionKeyMap[event.key.toLocaleUpperCase()]);
 };
 
-const directionMap: Record<Directions, Coordinate> = {
-  [Directions.Up]: UP,
-  [Directions.Right]: RIGHT,
-  [Directions.Down]: DOWN,
-  [Directions.Left]: LEFT,
+export const setNewDirection = (val: Directions): void => {
+  setDirection(directionMap[val]);
 };
 
-export const setNewDirection = (val: Directions) => {
-  const direction = directionMap[val];
+const setDirection = (direction: Coordinate): void => {
   if (direction !== undefined) {
     state.snake.direction = direction;
   }
